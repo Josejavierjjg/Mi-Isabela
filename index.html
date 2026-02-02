@@ -34,6 +34,7 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .page:first-child { border-right: 4px solid #d1c4e9; }
@@ -45,9 +46,20 @@
             color: #4a148c; 
             font-size: 1rem;
             min-height: 20px;
+            position: relative;
         }
 
-        /* Contenedor del GIF local */
+        /* Estilos del Lápiz - MÁS GRANDE */
+        #lapiz {
+            position: fixed; 
+            width: 70px; /* Tamaño aumentado */
+            z-index: 1000;
+            pointer-events: none; 
+            transition: all 0.08s linear; /* Movimiento un poco más pausado */
+            display: none; 
+            transform: rotate(-20deg); 
+        }
+
         .gif-container { 
             text-align: center; 
             margin: 15px 0; 
@@ -56,28 +68,37 @@
         }
         .gif-container img { width: 160px; border-radius: 10px; }
 
-        .question-box {
-            text-align: center;
-            margin-top: auto;
-            background: #f3e5f5;
-            padding: 15px;
-            border-radius: 12px;
-            opacity: 0;
-            transition: opacity 1s;
-        }
+        /* Estilos actualizados para los botones */
+.question-box {
+    text-align: center;
+    margin-top: auto;
+    background: #f3e5f5;
+    padding: 15px;
+    border-radius: 12px;
+    opacity: 0;
+    transition: opacity 1s;
+    position: relative; /* Contenedor de referencia */
+    height: 100px; /* Espacio para que el botón juegue */
+}
 
-        .btn {
-            padding: 10px 25px;
-            margin: 5px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-family: inherit;
-        }
+#btn-si { 
+    background-color: #ce93d8; 
+    color: white; 
+    position: absolute;
+    left: 20%; /* Lo mueve a la izquierda */
+    top: 50%;
+    transform: translateY(-50%);
+}
 
-        #btn-si { background-color: #ce93d8; color: white; cursor: pointer; }
-        #btn-no { background-color: #ef9a9a; color: white; position: absolute; }
+#btn-no { 
+    background-color: #ef9a9a; 
+    color: white; 
+    position: absolute;
+    right: 20%; /* Posición inicial a la derecha */
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.2s ease; /* Movimiento más fluido */
+}
 
         #mensaje-final {
             display: none;
@@ -100,6 +121,8 @@
     <audio id="miMusica" loop>
         <source src="musica.mp3" type="audio/mpeg">
     </audio>
+
+    <img id="lapiz" src="lapiz.png" alt="Escribiendo...">
 
     <div class="book">
         <div class="page">
@@ -139,18 +162,29 @@
             t2: "Contigo todo parece más brillante. Cada instante a tu lado es un regalo que quiero atesorar siempre. Sueño con caminar juntos y reír hasta que nos duela el estómago. Quiero que cada día contigo sea una historia única e inolvidable."
         };
 
-        // Velocidad ajustada a 35ms (Más rápido)
-        const VELOCIDAD = 35;
+        const VELOCIDAD = 50; // Más lento (antes era 35)
+        const lapiz = document.getElementById("lapiz");
 
         function escribirTexto(id, texto, callback) {
             let i = 0;
             const elemento = document.getElementById(id);
+            lapiz.style.display = "block";
+
             const interval = setInterval(() => {
                 if (i < texto.length) {
-                    elemento.innerHTML += texto.charAt(i);
+                    const span = document.createElement("span");
+                    span.innerHTML = texto.charAt(i);
+                    elemento.appendChild(span);
+
+                    const rect = span.getBoundingClientRect();
+                    // Ajuste de posición para el lápiz más grande
+                    lapiz.style.left = (rect.left + 5) + "px";
+                    lapiz.style.top = (rect.top - 60) + "px"; // Subí el valor para compensar el tamaño
+
                     i++;
                 } else {
                     clearInterval(interval);
+                    lapiz.style.display = "none";
                     if (callback) callback();
                 }
             }, VELOCIDAD);
@@ -158,16 +192,14 @@
 
         window.onload = () => {
             escribirTexto("text1", frases.t1, () => {
-                // Aparece el GIF nativo
                 document.getElementById("gif1").style.opacity = "1";
-                
                 setTimeout(() => {
                     escribirTexto("text1-footer", frases.t1f, () => {
                         escribirTexto("text2", frases.t2, () => {
                             document.getElementById("pregunta").style.opacity = "1";
                         });
                     });
-                }, 600);
+                }, 800);
             });
         };
 
@@ -175,14 +207,23 @@
             document.getElementById("miMusica").play();
         }
 
-        function moverBoton() {
-            const btnNo = document.getElementById('btn-no');
-            // Evita que se salga mucho de la pantalla
-            const x = Math.random() * (window.innerWidth - 120);
-            const y = Math.random() * (window.innerHeight - 60);
-            btnNo.style.left = x + 'px';
-            btnNo.style.top = y + 'px';
-        }
+       function moverBoton() {
+    const btnNo = document.getElementById('btn-no');
+    const contenedor = document.querySelector('.question-box');
+    
+    // Obtenemos los límites del cuadro de la pregunta
+    const rect = contenedor.getBoundingClientRect();
+    
+    // Calculamos posiciones aleatorias pero SOLO dentro de su cuadrito
+    // Le restamos el ancho/alto del botón para que no se salga por los bordes
+    const x = Math.random() * (rect.width - btnNo.offsetWidth);
+    const y = Math.random() * (rect.height - btnNo.offsetHeight);
+    
+    // Aplicamos la nueva posición relativa al contenedor
+    btnNo.style.left = x + 'px';
+    btnNo.style.top = y + 'px';
+    btnNo.style.right = 'auto'; // Anulamos el right inicial
+}
 
         function mostrarFinal() {
             document.getElementById('mensaje-final').style.display = 'block';
