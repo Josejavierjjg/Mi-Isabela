@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para mi niña</title>
+    <style>
+        body {
+            background-color: #fce4ec;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            overflow: hidden;
+        }
+
+        .book {
+            display: flex;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 8px solid #d1c4e9;
+            width: 850px;
+            min-height: 480px;
+            position: relative;
+        }
+
+        .page {
+            width: 50%;
+            padding: 25px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page:first-child { border-right: 4px solid #d1c4e9; }
+
+        h2 { color: #7b1fa2; font-size: 1.5rem; text-align: center; margin-top: 0; }
+        
+        .typewriter-text { 
+            line-height: 1.6; 
+            color: #4a148c; 
+            font-size: 1rem;
+            min-height: 20px;
+        }
+
+        /* Contenedor del GIF local */
+        .gif-container { 
+            text-align: center; 
+            margin: 15px 0; 
+            opacity: 0; 
+            transition: opacity 0.8s ease; 
+        }
+        .gif-container img { width: 160px; border-radius: 10px; }
+
+        .question-box {
+            text-align: center;
+            margin-top: auto;
+            background: #f3e5f5;
+            padding: 15px;
+            border-radius: 12px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        #btn-si { background-color: #ce93d8; color: white; cursor: pointer; }
+        #btn-no { background-color: #ef9a9a; color: white; position: absolute; }
+
+        #mensaje-final {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border: 6px solid #7b1fa2;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 0 100px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body onclick="playMusica()">
+
+    <audio id="miMusica" loop>
+        <source src="musica.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="book">
+        <div class="page">
+            <h2>✨ Mis sentimientos... ✨</h2>
+            <div id="text1" class="typewriter-text"></div>
+            
+            <div id="gif1" class="gif-container">
+                <img src="migo.gif" alt="Nuestro GIF">
+            </div>
+            
+            <div id="text1-footer" class="typewriter-text" style="font-weight: bold; text-align: center;"></div>
+        </div>
+
+        <div class="page">
+            <h2>✨ Mis sueños contigo ✨</h2>
+            <div id="text2" class="typewriter-text"></div>
+            
+            <div id="pregunta" class="question-box">
+                <p>¿Pasarías más tiempo a mi lado?</p>
+                <button id="btn-si" class="btn" onclick="mostrarFinal()">Sí</button>
+                <button id="btn-no" class="btn" onmouseover="moverBoton()">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mensaje-final">
+        <h3>¡Te haré siempre muy feliz! 💝</h3>
+        <img src="migo.gif" width="120">
+        <br><br>
+        <button class="btn" style="background:#7b1fa2; color:white;" onclick="location.reload()">Cerrar</button>
+    </div>
+
+    <script>
+        const frases = {
+            t1: "Cada momento contigo me llena de alegría y calidez. Cada sonrisa tuya ilumina mi día, y cada pensamiento en ti hace que mi corazón se acelere...",
+            t1f: "Eres mi inspiración y mi alegría diaria.",
+            t2: "Contigo todo parece más brillante. Cada instante a tu lado es un regalo que quiero atesorar siempre. Sueño con caminar juntos y reír hasta que nos duela el estómago. Quiero que cada día contigo sea una historia única e inolvidable."
+        };
+
+        // Velocidad ajustada a 35ms (Más rápido)
+        const VELOCIDAD = 35;
+
+        function escribirTexto(id, texto, callback) {
+            let i = 0;
+            const elemento = document.getElementById(id);
+            const interval = setInterval(() => {
+                if (i < texto.length) {
+                    elemento.innerHTML += texto.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    if (callback) callback();
+                }
+            }, VELOCIDAD);
+        }
+
+        window.onload = () => {
+            escribirTexto("text1", frases.t1, () => {
+                // Aparece el GIF nativo
+                document.getElementById("gif1").style.opacity = "1";
+                
+                setTimeout(() => {
+                    escribirTexto("text1-footer", frases.t1f, () => {
+                        escribirTexto("text2", frases.t2, () => {
+                            document.getElementById("pregunta").style.opacity = "1";
+                        });
+                    });
+                }, 600);
+            });
+        };
+
+        function playMusica() {
+            document.getElementById("miMusica").play();
+        }
+
+        function moverBoton() {
+            const btnNo = document.getElementById('btn-no');
+            // Evita que se salga mucho de la pantalla
+            const x = Math.random() * (window.innerWidth - 120);
+            const y = Math.random() * (window.innerHeight - 60);
+            btnNo.style.left = x + 'px';
+            btnNo.style.top = y + 'px';
+        }
+
+        function mostrarFinal() {
+            document.getElementById('mensaje-final').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
